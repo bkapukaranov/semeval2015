@@ -59,6 +59,7 @@ object Main {
 
       words.foreach { word =>
         if (normalizedTweet.contains(word) & !isAmongPassedWords(word, passedWords))
+          if (dictionary(word).abs > 0.65)
             passedWords += word
       }
 
