@@ -1,9 +1,10 @@
-import java.nio.charset.CodingErrorAction
-import java.nio.file.{Files, Path, Paths, StandardOpenOption}
+import java.nio.file.{StandardOpenOption, Path, Paths, Files}
 
+import scala.collection.mutable.ListBuffer
+import scala.io.Source
 import org.apache.commons.lang3.StringEscapeUtils
-
-import scala.io.{Codec, Source}
+import java.nio.charset.CodingErrorAction
+import scala.io.Codec
 
 /**
  * Created by Borislav Kapukaranov on 10/19/14.
@@ -63,19 +64,20 @@ object Main {
       print("building vector took: ")
       println(endTime - startTime)
 
-      // 3. write vector string
+      // 3. assemble vector string
+      val vectorString : StringBuilder = new StringBuilder(label)
       startTime = System.currentTimeMillis()
-
-      val outPath : Path = Paths.get(outFile)
-      Files.write(outPath, label.getBytes, StandardOpenOption.APPEND)
       for (index <- 0 until words.size) {
-        Files.write(outPath, " %d %s".format(index+1, doubleVector(index)).getBytes, StandardOpenOption.APPEND)
+        vectorString.append(" %d %s".format(index+1, doubleVector(index)))
       }
-      Files.write(outPath, "\n".getBytes, StandardOpenOption.APPEND)
+      vectorString.append("\n")
+
+      // 4. print vector string
+      val outPath : Path = Paths.get(outFile)
+      Files.write(outPath, vectorString.toString().getBytes, StandardOpenOption.APPEND)
 
       endTime = System.currentTimeMillis()
-
-      print("appending string to file took: ")
+      print("building and writing string to file took: ")
       println(endTime - startTime)
     }
   }
