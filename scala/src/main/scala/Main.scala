@@ -37,9 +37,6 @@ object Main {
       .fromFile(tweetsFile)
       .getLines()
       .foreach { line =>
-//      println(StringEscapeUtils.unescapeJava(line))
-//      val pairVector: ListBuffer[(String, Double)] = ListBuffer()
-      val doubleVector : Array[Double] = new Array[Double](words.size)
       // 0. separate label from tweet
       val tweetPair = line.split("\t")
       val label = tweetPair(2)
@@ -53,55 +50,45 @@ object Main {
         .replaceAll("#", "")
       println(normalizedTweet)
       // 2. build vector
-//      var positive = 0.0
-//      var negative = 0.0
+      var positive = 0.0
+      var negative = 0.0
+      var score = 0.0
+      val passedWords : ListBuffer[String] = ListBuffer()
 
       var startTime = System.currentTimeMillis()
-      for (index <- 0 until words.size) {
-        if (normalizedTweet.contains(words(index))) {
-//          println(words(index) + " " + dictionary(words(index)))
-          doubleVector(index) = dictionary(words(index))
-        } else {
-          doubleVector(index) = 0.0
-        }
+
+      words.foreach { word =>
+        if (normalizedTweet.contains(word) & !isAmongPassedWords(word, passedWords))
+            passedWords += word
       }
+
+      val cleanPassedWords = cleanEmbeddedWords(passedWords)
+      cleanPassedWords.foreach { word =>
+        val value = dictionary(word)
+        if (value > 0.0) positive += value
+        else negative += value
+        score += value
+      }
+
       var endTime = System.currentTimeMillis()
+
       print("building vector: ")
       println(endTime - startTime)
-//      words.foreach { word =>
-//        if (normalizedTweet.contains(word)) {
-//          println(word + " " + dictionary(word))
-//          if (dictionary(word) > 0) {
-//            positive += dictionary(word)
-//          }
-//          else {
-//            negative += dictionary(word)
-//          }
-//        }
-//      }
-//      words.foreach { word =>
-//        // if word is present in tweet update vector
-//        if (normalizedTweet.contains(word)) {
-//          pairVector += Pair(word, dictionary(word))
-//        } else {
-//          pairVector += Pair(word, 0.0)
-//        }
-//      }
+
+      println(cleanPassedWords)
 
       // 3. assemble vector string
       val vectorString : StringBuilder = new StringBuilder(label)
-//      for (index <- 0 to pairVector.length) {
-//        vectorString.append(" %d %s".format(index + 1, pairVector(index)._2))
-//      }
-//      vectorString.append(" %d %s".format(1, positive))
-//      vectorString.append(" %d %s".format(2, negative))
-//      vectorString.append("\n")
+
       startTime = System.currentTimeMillis()
-      for (index <- 0 until words.size) {
-        vectorString.append( "%d %s".format(index+1, doubleVector(index)))
-      }
+
+      vectorString.append(" %d %s".format(1, positive))
+      vectorString.append(" %d %s".format(2, negative))
+      vectorString.append(" %d %s".format(3, score))
       vectorString.append("\n")
+
       endTime = System.currentTimeMillis()
+
       print("building strint to write: ")
       println(endTime - startTime)
 
@@ -109,6 +96,23 @@ object Main {
       val outPath : Path = Paths.get(outFile)
       Files.write(outPath, vectorString.toString().getBytes, StandardOpenOption.APPEND)
     }
+  }
+
+  private def cleanEmbeddedWords(passedWords: ListBuffer[String]) : ListBuffer[String] = {
+    val cleanedPassedWords = passedWords.clone()
+    passedWords.foreach { wordA =>
+      passedWords.foreach { wordB =>
+        if (!wordA.equals(wordB) & wordA.contains(wordB)) cleanedPassedWords -= wordB
+      }
+    }
+    cleanedPassedWords
+  }
+
+  private def isAmongPassedWords(word : String, passedWords : ListBuffer[String]) : Boolean = {
+    passedWords.foreach { passedWord =>
+      if (passedWord.contains(word)) return true
+    }
+    false
   }
 
   private def buildDictionary(args: Array[String]): Map[String, Double] = {
