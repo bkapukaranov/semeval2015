@@ -1,10 +1,9 @@
-import java.nio.file.{StandardOpenOption, Path, Paths, Files}
-
-import scala.collection.mutable.ListBuffer
-import scala.io.Source
-import org.apache.commons.lang3.StringEscapeUtils
 import java.nio.charset.CodingErrorAction
-import scala.io.Codec
+import java.nio.file.{Files, Path, Paths, StandardOpenOption}
+
+import org.apache.commons.lang3.StringEscapeUtils
+
+import scala.io.{Codec, Source}
 
 /**
  * Created by Borislav Kapukaranov on 10/19/14.
