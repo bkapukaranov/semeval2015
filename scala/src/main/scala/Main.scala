@@ -1,10 +1,9 @@
-import java.nio.file.{StandardOpenOption, Path, Paths, Files}
-
-import scala.collection.mutable.ListBuffer
-import scala.io.Source
-import org.apache.commons.lang3.StringEscapeUtils
 import java.nio.charset.CodingErrorAction
-import scala.io.Codec
+import java.nio.file.{Files, Path, Paths, StandardOpenOption}
+
+import org.apache.commons.lang3.StringEscapeUtils
+
+import scala.io.{Codec, Source}
 
 /**
  * Created by Borislav Kapukaranov on 10/19/14.
@@ -61,23 +60,23 @@ object Main {
         }
       }
       var endTime = System.currentTimeMillis()
-      print("building vector: ")
+      print("building vector took: ")
       println(endTime - startTime)
 
-      // 3. assemble vector string
-      val vectorString : StringBuilder = new StringBuilder(label)
+      // 3. write vector string
       startTime = System.currentTimeMillis()
-      for (index <- 0 until words.size) {
-        vectorString.append( "%d %s".format(index+1, doubleVector(index)))
-      }
-      vectorString.append("\n")
-      endTime = System.currentTimeMillis()
-      print("building strint to write: ")
-      println(endTime - startTime)
 
-      // 4. print vector string
       val outPath : Path = Paths.get(outFile)
-      Files.write(outPath, vectorString.toString().getBytes, StandardOpenOption.APPEND)
+      Files.write(outPath, label.getBytes, StandardOpenOption.APPEND)
+      for (index <- 0 until words.size) {
+        Files.write(outPath, " %d %s".format(index+1, doubleVector(index)).getBytes, StandardOpenOption.APPEND)
+      }
+      Files.write(outPath, "\n".getBytes, StandardOpenOption.APPEND)
+
+      endTime = System.currentTimeMillis()
+
+      print("appending string to file took: ")
+      println(endTime - startTime)
     }
   }
 
